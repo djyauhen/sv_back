@@ -1,25 +1,31 @@
 import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {IsNotEmpty, Min} from "class-validator";
 
 @Entity('articles')
 export class Article {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column('text',{nullable: false})
+    @IsNotEmpty()
     title: string;
 
-    @Column('text')
+    @Column('text', {nullable: false})
+    @IsNotEmpty()
     preface: string;
 
-    @Column('text')
+    @Column('text', {nullable: false})
+    @IsNotEmpty()
     text: string;
 
-    @Column({ nullable: true })
+    @Column({nullable: true})
     image: string;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     date: Date;
 
-    @Column()
+    @Column({nullable: false})
+    @IsNotEmpty()
+    @Min(1)
     duration: number;
 }

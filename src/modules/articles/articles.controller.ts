@@ -17,6 +17,8 @@ import {JwtAuthGuard} from "../../guards/jwt-auth/jwt-auth.guard";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {multerOptions} from "../../common/multer.config";
 import {Article} from "./entities/article.entity";
+import * as fs from 'fs/promises';
+import { join } from 'path';
 
 @Controller('articles')
 export class ArticlesController {
@@ -25,31 +27,39 @@ export class ArticlesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('image', multerOptions))
-  async create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    if (!body.title) {
-      throw new BadRequestException('Заголовок обязателен');
+  async create(@Body() createArticleDto: CreateArticleDto, @UploadedFile() file: Express.Multer.File) {
+    try {
+      const result = await this.articlesService.create(createArticleDto, file?.path);
+      return result;
+    } catch (error) {
+      // Удаляем файл, если он был загружен и произошла ошибка
+      if (file?.path) {
+        await fs.unlink(join(process.cwd(), file.path)).catch((err) => {
+          console.warn(`Failed to delete file ${file.path}: ${err.message}`);
+        });
+      }
+      throw error; // Пробрасываем ошибку дальше
     }
-    const createArticleDto: CreateArticleDto = {
-      title: body.title,
-      preface: body.preface,
-      text: body.text,
-      duration: parseInt(body.duration, 10),
-    };
-    return this.articlesService.create(createArticleDto, file?.path);
   }
 
   @Get()
-  async findAll(@Query('page') page: string = '1') {
+  async findAll() {
+    return this.articlesService.findAll();
+  }
+
+  @Get('page')
+  async findAllByPage(@Query('page') page: string = '1') {
     const itemsPerPage = 6;
     const pageNumber = parseInt(page, 10) || 1;
 
-    const response = await this.articlesService.findAll(pageNumber, itemsPerPage);
+    const response = await this.articlesService.findAllByPage(pageNumber, itemsPerPage);
 
     return {
       statusCode: HttpStatus.OK,
       data: response,
     };
   }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -59,14 +69,19 @@ export class ArticlesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('image', multerOptions))
-  async update(@Param('id') id: string, @Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    const updateArticleDto: UpdateArticleDto = {
-      title: body.title,
-      preface: body.preface,
-      text: body.text,
-      duration: body.duration ? parseInt(body.duration, 10) : undefined,
-    };
-    return this.articlesService.update(+id, updateArticleDto, file?.path);
+  async update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto, @UploadedFile() file: Express.Multer.File) {
+    try {
+      const result = await this.articlesService.update(+id, updateArticleDto, file?.path);
+      return result;
+    } catch (error) {
+      // Удаляем файл, если он был загружен и произошла ошибка
+      if (file?.path) {
+        await fs.unlink(join(process.cwd(), file.path)).catch((err) => {
+          console.warn(`Failed to delete file ${file.path}: ${err.message}`);
+        });
+      }
+      throw error; // Пробрасываем ошибку дальше
+    }
   }
 
   @Delete(':id')

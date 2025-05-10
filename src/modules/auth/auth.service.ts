@@ -43,7 +43,6 @@ export class AuthService {
 
     async refresh(refreshToken: string) {
         try {
-            // Проверяем валидность refresh token
             const payload = this.jwtService.verify(refreshToken);
             const user = await this.usersRepository.findOne({ where: { id: payload.sub } });
 
@@ -51,17 +50,21 @@ export class AuthService {
                 throw new UnauthorizedException('Invalid refresh token');
             }
 
-            // Проверяем соответствие хэша refresh token
             const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
             if (!isValid) {
                 throw new UnauthorizedException('Invalid refresh token');
             }
 
-            // Генерируем новый access token
+            // Генерируем новый access и refresh token
             const newPayload = { sub: user.id, login: user.login };
             const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: '1h' });
+            const newRefreshToken = this.jwtService.sign(newPayload, { expiresIn: '5d' });
 
-            return { access_token: newAccessToken };
+            // Хэшируем и сохраняем новый refresh token
+            const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+            await this.usersRepository.update(user.id, { refreshToken: hashedRefreshToken });
+
+            return { access_token: newAccessToken, refresh_token: newRefreshToken };
         } catch (e) {
             throw new UnauthorizedException('Invalid refresh token');
         }

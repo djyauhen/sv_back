@@ -1,5 +1,5 @@
 import {Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException} from '@nestjs/common';
-import {Response, Request} from 'express';
+import {Response} from 'express';
 import {AuthService} from './auth.service';
 import {LoginUserDto} from "./dto/login-user.dto";
 import {JwtService} from "@nestjs/jwt";
@@ -22,10 +22,10 @@ export class AuthController {
 
         // Устанавливаем refresh_token в HTTP-only cookie
         res.cookie('refresh_token', refresh_token, {
-            httpOnly: true, // Защита от XSS
-            secure: process.env.NODE_ENV === 'production', // Только HTTPS в продакшене
-            sameSite: 'strict', // Защита от CSRF
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 5 * 24 * 60 * 60 * 1000, // 5 дней, как у токена
         });
 
         return {access_token}; // Возвращаем только access_token в теле ответа
@@ -39,7 +39,14 @@ export class AuthController {
             throw new UnauthorizedException('Refresh token not found');
         }
 
-        const {access_token} = await this.authService.refresh(refreshToken);
+        const {access_token, refresh_token} = await this.authService.refresh(refreshToken);
+
+        res.cookie('refresh_token', refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 5 * 24 * 60 * 60 * 1000,
+        });
 
         return {access_token};
     }

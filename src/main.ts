@@ -8,14 +8,14 @@ import * as express from 'express';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.setGlobalPrefix('api');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(new ValidationPipe({transform: true, whitelist: true, forbidNonWhitelisted: true }));
     app.use(cookieParser());
     app.enableCors({
         origin: (origin, callback) => {
             const allowedOrigins = [
                 'http://localhost:4200',
-                'https://77.222.38.178',
-                'http://77.222.38.178',
+                'https://true8lawyer.ru/',
+                'http://true8lawyer.ru/',
             ];
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);

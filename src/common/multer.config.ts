@@ -11,7 +11,7 @@ const normalizePath = (...segments: string[]): string => {
 
 export const multerOptions = {
     storage: diskStorage({
-        destination: './Uploads/articles',
+        destination: './uploads/articles',
         filename: (req, file, callback) => {
             const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
             callback(null, uniqueName);
@@ -30,7 +30,7 @@ export const multerOptions = {
     },
     async transform(req, file, callback) {
         try {
-            const tempPath = normalizePath(process.cwd(), 'Uploads', 'articles', file.filename);
+            const tempPath = normalizePath(process.cwd(), 'uploads', 'articles', file.filename);
             const compressedPath = normalizePath(process.cwd(), 'Uploads', 'articles', `compressed-${file.filename}`);
 
             // Сжимаем изображение с помощью Sharp
@@ -43,7 +43,7 @@ export const multerOptions = {
             await fs.rename(compressedPath, tempPath);
 
             // Сохраняем нормализованный путь в file.path
-            file.path = normalizePath('Uploads', 'articles', file.filename);
+            file.path = normalizePath('uploads', 'articles', file.filename);
             callback(null, file);
         } catch (error) {
             callback(error);
