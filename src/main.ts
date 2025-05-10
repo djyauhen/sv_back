@@ -16,6 +16,7 @@ async function bootstrap() {
                 'http://localhost:4200',
                 'https://true8lawyer.ru/',
                 'http://true8lawyer.ru/',
+                'http://45.128.205.139/',
             ];
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
