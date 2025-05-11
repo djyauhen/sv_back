@@ -26,7 +26,7 @@ export class SitemapController {
         const articles = await this.articlesService.findAll(); // Замените на ваш сервис
         articles.forEach(article => {
           sitemap.write({
-            url: `/articles/${article.id}`,
+            url: `/blog/${article.id}`,
             changefreq: 'weekly',
             priority: 0.9,
             lastmod: article.date,
