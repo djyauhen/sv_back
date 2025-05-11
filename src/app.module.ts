@@ -5,11 +5,13 @@ import {UserModule} from './modules/user/user.module';
 import {AuthModule} from './modules/auth/auth.module';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import { ArticlesModule } from './modules/articles/articles.module';
-import { MessageModule } from './modules/message/message.module';
+import {ArticlesModule} from './modules/articles/articles.module';
+import {MessageModule} from './modules/message/message.module';
+import {SitemapController} from './modules/sitemap/sitemap.controller';
+import {SitemapModule} from "./modules/sitemap/sitemap.module";
 
 @Module({
-    controllers: [AppController],
+    controllers: [AppController, SitemapController],
     providers: [AppService],
     imports: [
         ConfigModule.forRoot({isGlobal: true}),
@@ -31,7 +33,8 @@ import { MessageModule } from './modules/message/message.module';
         UserModule,
         AuthModule,
         ArticlesModule,
-        MessageModule
+        MessageModule,
+        SitemapModule
     ],
 })
 export class AppModule {
